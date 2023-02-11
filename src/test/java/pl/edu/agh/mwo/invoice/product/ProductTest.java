@@ -37,6 +37,7 @@ public class ProductTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testProductWithNullName() {
+
         new OtherProduct(null, new BigDecimal("100.0"));
     }
 
