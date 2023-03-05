@@ -125,4 +125,15 @@ public class InvoiceTest {
     public void testAddingNullProduct() {
         invoice.addProduct(null);
     }
+
+    @Test
+    public void testInvoiceHasNumber(){
+        int number = invoice.getNumber();
+        Assert.assertNotNull(number > 0);
+    }
+
+    @Test
+    public void testInvoiceNumberAreDifferentForDifferentInvoices(){
+        int number 1
+    }
 }
