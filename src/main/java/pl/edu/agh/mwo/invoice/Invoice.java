@@ -1,71 +1,74 @@
 package pl.edu.agh.mwo.invoice;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
 import pl.edu.agh.mwo.invoice.product.Product;
 
 public class Invoice {
-    private Collection<Product> products = new ArrayList<>();
-
-    Invoice(){}
-
-    Invoice(final Collection<Product> products) {
-        this.products = products;
-    }
+    private Map<Product, Integer> products = new HashMap<Product, Integer>();
 
     public void addProduct(Product product) {
-        if (product != null){
-            products.add(product);
-        }else{
-            throw new IllegalArgumentException();
-        }
+        addProduct(product, 1);
     }
 
     public void addProduct(Product product, Integer quantity) {
-        if (quantity <= 0){
+        if (product == null || quantity <= 0) {
             throw new IllegalArgumentException();
-        }else {
-            for (int i = 0; i < quantity; i++){
-                products.add(product);
-            }
         }
+        products.put(product, quantity);
     }
 
-    public BigDecimal getSubtotal() {
-        if (products == null){
-            return BigDecimal.ZERO;
-        }else{
-            BigDecimal sum = new BigDecimal("0");
-            for (Product p : products){
-                sum = sum.add(p.getPrice());
-            }
-            return sum;
+    public BigDecimal getNetTotal() {
+        BigDecimal totalNet = BigDecimal.ZERO;
+        for (Product product : products.keySet()) {
+            BigDecimal quantity = new BigDecimal(products.get(product));
+            totalNet = totalNet.add(product.getPrice().multiply(quantity));
         }
+        return totalNet;
     }
 
-    public BigDecimal getTax() {
-        BigDecimal sumTax = new BigDecimal("0");
-        if(products == null){
-            return BigDecimal.ZERO;
-        }else {
-            for (Product p: products){
-                sumTax = sumTax.add(p.getPriceWithTax().subtract(p.getPrice()));
-            }
-        }
-        return sumTax;
+    public BigDecimal getTaxTotal() {
+        return getGrossTotal().subtract(getNetTotal());
     }
 
-    public BigDecimal getTotal() {
-        if (products == null){
-            return BigDecimal.ZERO;
-        }else {
-            BigDecimal total = new BigDecimal("0");
-            for (Product p : products) {
-                total = total.add(p.getPriceWithTax());
-            }
-            return total;
+    public BigDecimal getGrossTotal() {
+        BigDecimal totalGross = BigDecimal.ZERO;
+        for (Product product : products.keySet()) {
+            BigDecimal quantity = new BigDecimal(products.get(product));
+            totalGross = totalGross.add(product.getPriceWithTax().multiply(quantity));
         }
+        return totalGross;
     }
+
+    int getNumber() {
+        return products.size();
+    }
+
+    public String getStringFormatOfInvoice(){
+        String result = "";
+        Map<String, Integer> resultMap = new HashMap<>();
+        int totalQuantity = 0;
+        for (Map.Entry<Product, Integer> entry : products.entrySet()){
+            if (resultMap.containsKey(entry.getKey().getName() + ", " + entry.getKey().getPrice())){
+                resultMap.put(entry.getKey().getName() + ", " + entry.getKey().getPrice(), resultMap.get(entry.getKey().getName() + ", " + entry.getKey().getPrice()) + entry.getValue());
+            }else{
+                resultMap.put(entry.getKey().getName() + ", " + entry.getKey().getPrice(), entry.getValue());
+            }
+            totalQuantity += entry.getValue();
+        }
+
+        for(Map.Entry<String, Integer> entry : resultMap.entrySet()){
+            String temp = entry.getKey();
+            String quantityProduct = String.valueOf(entry.getValue());
+            int index = temp.indexOf(",");
+            result += temp.substring(0, index+1) + " " + quantityProduct + ", " + temp.substring(index + quantityProduct.length() + 1) + "%n";
+
+        }
+
+        result += "Liczba pozycji: " + totalQuantity;
+        return result;
+    }
+
+
 }
