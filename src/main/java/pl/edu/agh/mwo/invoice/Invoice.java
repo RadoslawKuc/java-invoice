@@ -1,15 +1,12 @@
 package pl.edu.agh.mwo.invoice;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import pl.edu.agh.mwo.invoice.product.Product;
 
 public class Invoice {
-    private Map<Product, Integer> products = new HashMap<>();
-    private static int nextNumber = 0;
-    private final int number = ++nextNumber;
+    private Map<Product, Integer> products = new HashMap<Product, Integer>();
 
     public void addProduct(Product product) {
         addProduct(product, 1);
@@ -44,7 +41,34 @@ public class Invoice {
         return totalGross;
     }
 
-    public int getNumber() {
-        return number;
+    int getNumber() {
+        return products.size();
     }
+
+    public String getStringFormatOfInvoice(){
+        String result = "";
+        Map<String, Integer> resultMap = new HashMap<>();
+        int totalQuantity = 0;
+        for (Map.Entry<Product, Integer> entry : products.entrySet()){
+            if (resultMap.containsKey(entry.getKey().getName() + ", " + entry.getKey().getPrice())){
+                resultMap.put(entry.getKey().getName() + ", " + entry.getKey().getPrice(), resultMap.get(entry.getKey().getName() + ", " + entry.getKey().getPrice()) + entry.getValue());
+            }else{
+                resultMap.put(entry.getKey().getName() + ", " + entry.getKey().getPrice(), entry.getValue());
+            }
+            totalQuantity += entry.getValue();
+        }
+
+        for(Map.Entry<String, Integer> entry : resultMap.entrySet()){
+            String temp = entry.getKey();
+            String quantityProduct = String.valueOf(entry.getValue());
+            int index = temp.indexOf(",");
+            result += temp.substring(0, index+1) + " " + quantityProduct + ", " + temp.substring(index + quantityProduct.length() + 1) + "%n";
+
+        }
+
+        result += "Liczba pozycji: " + totalQuantity;
+        return result;
+    }
+
+
 }

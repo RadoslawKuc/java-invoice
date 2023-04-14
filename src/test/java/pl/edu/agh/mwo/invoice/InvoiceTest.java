@@ -7,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import pl.edu.agh.mwo.invoice.Invoice;
 import pl.edu.agh.mwo.invoice.product.DairyProduct;
 import pl.edu.agh.mwo.invoice.product.OtherProduct;
 import pl.edu.agh.mwo.invoice.product.Product;
@@ -128,14 +127,20 @@ public class InvoiceTest {
 
     @Test
     public void testInvoiceHasNumberGreaterThan0() {
+        invoice.addProduct(new DairyProduct("Zsiadle mleko", new BigDecimal("5.55")), 1);
         int number = invoice.getNumber();
         Assert.assertThat(number, Matchers.greaterThan(0));
     }
 
     @Test
     public void testTwoInvoicesHaveDifferentNumbers() {
-        int number1 = new Invoice().getNumber();
-        int number2 = new Invoice().getNumber();
+        Invoice invoice1 = new Invoice();
+        Invoice invoice2 = new Invoice();
+
+        invoice1.addProduct(new DairyProduct("Zsiadle mleko", new BigDecimal("5.55")), 1);
+
+        int number1 = invoice1.getNumber();
+        int number2 = invoice2.getNumber();
         Assert.assertNotEquals(number1, number2);
     }
 
@@ -146,8 +151,32 @@ public class InvoiceTest {
 
     @Test
     public void testTheFirstInvoiceNumberIsLowerThanTheSecond() {
-        int number1 = new Invoice().getNumber();
-        int number2 = new Invoice().getNumber();
+        Invoice invoice1 = new Invoice();
+        Invoice invoice2 = new Invoice();
+        invoice1.addProduct(new DairyProduct("Zsiadle mleko", new BigDecimal("5.55")), 1);
+        invoice2.addProduct(new DairyProduct("Mars", new BigDecimal("2.50")), 1);
+        invoice2.addProduct(new DairyProduct("Coca-cola", new BigDecimal("5.15")), 1);
+
+        int number1 = invoice1.getNumber();
+        int number2 = invoice2.getNumber();
         Assert.assertThat(number1, Matchers.lessThan(number2));
+    }
+
+    @Test
+    public void testTheStringContainAllProductsAndCountCorrectlyFromTheInvoice() {
+        invoice.addProduct(new DairyProduct("Mars", new BigDecimal("2.50")), 1);
+        invoice.addProduct(new DairyProduct("Coca-cola", new BigDecimal("5.15")), 3);
+        String expectedValue = "Coca-cola, 3, 5.15%nMars, 1, 2.50%nLiczba pozycji: 4";
+        String result = invoice.getStringFormatOfInvoice();
+        Assert.assertEquals(expectedValue, result);
+    }
+
+    @Test
+    public void testTheStringContainAllProductsAndCorrectlyCount() {
+        invoice.addProduct(new DairyProduct("Mars", new BigDecimal("2.50")), 1);
+        invoice.addProduct(new DairyProduct("Mars", new BigDecimal("2.50")), 3);
+        String expectedValue = "Mars, 4, 2.50%nLiczba pozycji: 4";
+        String result = invoice.getStringFormatOfInvoice();
+        Assert.assertEquals(expectedValue, result);
     }
 }
